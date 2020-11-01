@@ -334,7 +334,7 @@ func (v *SensorBME680) readUncompTemprature(i2c *i2c.I2C, accuracy AccuracyMode)
 	}
 	//   set over sample rate to 1x
 	osrt := v.getOversamplingRation(accuracy)
-	err = i2c.WriteRegU8(BME680_OSR_REG, osrt<<5)
+	err = i2c.WriteRegU8(BME680_OSR_REG, (osrt<<5) | 0x01)
 	if err != nil {
 		return 0, err
 	}
@@ -354,6 +354,8 @@ func (v *SensorBME680) readUncompTemprature(i2c *i2c.I2C, accuracy AccuracyMode)
 	}
 
 	 */
+
+
 	buf, _, err := i2c.ReadRegBytes(BME680_TEMP_OUT_MSB_LSB_XLSB, 3)
 	if err != nil {
 		return 0, err
