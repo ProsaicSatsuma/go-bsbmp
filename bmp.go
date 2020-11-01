@@ -64,6 +64,8 @@ const (
 	BME280
 	// Bosch Sensortec pressure and temperature sensor model BMP388.
 	BMP388
+
+	BME680
 )
 
 // Accuracy mode for calculation of atmospheric pressure and temprature.
@@ -121,6 +123,8 @@ func NewBMP(sensorType SensorType, i2c *i2c.I2C) (*BMP, error) {
 		v.bmp = &SensorBME280{}
 	case BMP388:
 		v.bmp = &SensorBMP388{}
+	case BME680:
+		v.bmp = &SensorBME680{}
 	}
 
 	id, err := v.ReadSensorID()
