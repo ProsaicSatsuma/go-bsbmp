@@ -39,10 +39,10 @@ const (
 	BME680_ERR_REG    = 0x02
 	//	BME680_CNTR_MEAS_REG = 0xF4  // No such reg in BME680
 	BME680_ODR_REG      = 0x1D // Data Rate control
-	BME680_OSR_REG      = 0x1D // Over sample rate control
+	BME680_OSR_REG      = 0x74 // Over sample rate control
 	BME680_PWR_CTRL_REG = 0x1B // enable/disable press or temp, set operating mode
 	// CONFIG Register is used to set IIR Filter coefficent
-	BME680_CONFIG = 0x1F // TODO: support IIR filter settings
+	BME680_CONFIG = 0x75 // TODO: support IIR filter settings
 	//	BME680_RESET         = 0xE0 // TODO: '388 doesn't have a reset register
 	BME680_CMD_REG = 0x7E
 	//  cmds - nop, extmode, clear FIFO, softreset
@@ -51,7 +51,7 @@ const (
 	BME680_COEF_BYTES = 21
 	// BME680 specific 3-byte reading out temprature and preassure
 	BME680_PRES_OUT_MSB_LSB_XLSB = 0x04
-	BME680_TEMP_OUT_MSB_LSB_XLSB = 0x07
+	BME680_TEMP_OUT_MSB_LSB_XLSB = 0x22
 
 	BME680_PWR_MODE_SLEEP  = 0
 	BME680_PWR_MODE_FORCED = 1
@@ -334,21 +334,26 @@ func (v *SensorBME680) readUncompTemprature(i2c *i2c.I2C, accuracy AccuracyMode)
 	}
 	//   set over sample rate to 1x
 	osrt := v.getOversamplingRation(accuracy)
-	err = i2c.WriteRegU8(BME680_OSR_REG, osrt<<3)
+	err = i2c.WriteRegU8(BME680_OSR_REG, osrt<<5)
 	if err != nil {
 		return 0, err
 	}
-	// enable pres and temp measuremeent, start a measurment
+	/*
+	// enable pres and temp measurement, start a measurment
 	var power byte = (BME680_PWR_MODE_FORCED << 4) | 3 // enable pres, temp, FORCED operating mode
 	lg.Debugf("power=0x%0X", power)
 	err = i2c.WriteRegU8(BME680_PWR_CTRL_REG, power)
 	if err != nil {
 		return 0, err
 	}
+
+
 	_, err = waitForCompletion(v, i2c)
 	if err != nil {
 		return 0, err
 	}
+
+	 */
 	buf, _, err := i2c.ReadRegBytes(BME680_TEMP_OUT_MSB_LSB_XLSB, 3)
 	if err != nil {
 		return 0, err
@@ -423,7 +428,7 @@ func (v *SensorBME680) readUncompTempratureAndPressure(i2c *i2c.I2C,
 	return ut, up, nil
 }
 
-// ReadTemperatureMult100C reads and calculates temrature in C (celsius) multiplied by 100.
+// ReadTemperatureMult100C reads and calculates temperature in C (celsius) multiplied by 100.
 // Multiplication approach allow to keep result as integer number.
 func (v *SensorBME680) ReadTemperatureMult100C(i2c *i2c.I2C, accuracy AccuracyMode) (int32, error) {
 
